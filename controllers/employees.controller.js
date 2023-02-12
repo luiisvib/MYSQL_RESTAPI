@@ -30,11 +30,21 @@ const createEmployee = async (req, res, next) => {
 }
 
 const updateEmployee = async (req, res, next) => {
-  const {id} = req.params
-  const {name, salary} = req.body
-  const[result] = await pool.query("UPDATE employee SET name= IFNULL(?,name), salary= IFNULL(?,salary) where id = ?", [name,salary, id])
-  
-  res.json(rows)
+  try{
+    //throw new Error("Mi error ") //Generar un error
+    const {id} = req.params
+    const {name, salary} = req.body
+    const[result] = await pool.query("UPDATE employee SET name= IFNULL(?,name), salary= IFNULL(?,salary) where id = ?", [name,salary, id])
+    if (result.affectedRows =0){
+      return res.status(404).json({
+        message: "No existe dicho usuario a eliminar"
+      })
+    }
+    const [rows] = await pool.query("SELECT * FROM employee where id = ?", [id])
+    res.json(rows)
+  } catch(error){
+    res.status(500).send("Se ha producido un ERROR 500 "+error)
+  }
 }
 
 const deleteEmployees =  async (req, res, next) => {
